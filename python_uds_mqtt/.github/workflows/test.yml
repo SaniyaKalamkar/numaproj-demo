@@ -1,0 +1,37 @@
+name: Python Tests
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest pytest-asyncio pytest-cov
+        pip install aiomqtt pynumaflow
+    
+    - name: Run tests with coverage
+      working-directory: python_uds_mqtt
+      run: |
+        pytest test_mqtt.py -v --cov=mqtt_udsource --cov-report=term-missing --cov-report=html
+    
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: coverage-report
+        path: python_uds_mqtt/htmlcov/
